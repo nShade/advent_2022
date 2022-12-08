@@ -11,16 +11,12 @@ def convert_lines(lines):
     return [[int(line) for line in lines[:delimiter_index]]] + convert_lines(lines[delimiter_index + 1:])
 
 
-def max_calories(calories):
-    """
-    >>> max_calories([[0, 2, 4], [2, 1, 9], [1, 1], [4]])
-    22
-    """
-    return sum(sorted([sum(elf) for elf in calories])[-3:])
-
-
 if __name__ == "__main__":
     with open("input", "r") as text_input:
         input_lines = text_input.readlines()
-        result = max_calories(convert_lines(input_lines))
-        print(result)
+        elves = convert_lines(input_lines)
+        calories_per_elf = [sum(elf) for elf in elves]
+        result_1 = max(calories_per_elf)
+        print(f"Part 1: {result_1}")
+        result_2 = sum(sorted(calories_per_elf)[-3:])
+        print(f"Part 2: {result_2}")
