@@ -1,4 +1,8 @@
-def move_head(x, y, movement_direction):
+from typing import Literal
+
+
+def move_head(pos: tuple[int, int], movement_direction: Literal["U", "D", "L", "R"]):
+    x, y = pos
     if movement_direction == "U":
         return x, y + 1
     if movement_direction == "D":
@@ -9,36 +13,48 @@ def move_head(x, y, movement_direction):
         return x + 1, y
 
 
-def move_tail(tx, ty, hx, hy):
+def move_tail(tail: tuple[int, int], head: tuple[int, int]):
+    tx, ty = tail
+    hx, hy = head
     if tx - hx > 1:
         tx -= 1
-        if ty != hy:
-            ty = hy
+        if ty < hy:
+            ty += 1
+        if ty > hy:
+            ty -= 1
     if hx - tx > 1:
         tx += 1
-        if ty != hy:
-            ty = hy
+        if ty < hy:
+            ty += 1
+        if ty > hy:
+            ty -= 1
     if ty - hy > 1:
         ty -= 1
-        if tx != hx:
-            tx = hx
+        if tx < hx:
+            tx += 1
+        if tx > hx:
+            tx -= 1
     if hy - ty > 1:
         ty += 1
-        if tx != hx:
-            tx = hx
+        if tx < hx:
+            tx += 1
+        if tx > hx:
+            tx -= 1
     return tx, ty
 
 
-def move_rope(movements, knots):
+def move_rope(movements: list[tuple[str, int]], knots: int):
     tail_visited = set()
     rope = [(0, 0) for i in range(knots)]
-    tail_visited.add((0, 0))
+
+    tail_visited.add(rope[-1])
+
     for direction, distance in movements:
         for i in range(distance):
-            rope[0] = move_head(rope[0][0], rope[0][1], direction)
+            rope[0] = move_head(rope[0], direction)
             for knot in range(1, knots):
-                rope[knot] = move_tail(rope[knot][0], rope[knot][1], rope[knot - 1][0], rope[knot - 1][1])
-            tail_visited.add((rope[-1][0], rope[-1][1]))
+                rope[knot] = move_tail(rope[knot], rope[knot - 1])
+            tail_visited.add(rope[-1])
 
     return len(tail_visited)
 
