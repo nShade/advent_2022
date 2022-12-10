@@ -1,61 +1,56 @@
 from typing import Literal
 
+SHIFT_HEAD = {"U": (0, 1),
+              "D": (0, -1),
+              "L": (-1, 0),
+              "R": (1, 0)}
 
-def move_head(pos: tuple[int, int], movement_direction: Literal["U", "D", "L", "R"]):
-    x, y = pos
-    if movement_direction == "U":
-        return x, y + 1
-    if movement_direction == "D":
-        return x, y - 1
-    if movement_direction == "L":
-        return x - 1, y
-    if movement_direction == "R":
-        return x + 1, y
+SHIFT_TAIL = {k: v for d in [{(dx, dy): (shift_x, shift_y),
+                              (dy, dx): (shift_y, shift_x),
+                              (-dx, -dy): (-shift_x, -shift_y),
+                              (-dy, -dx): (-shift_y, -shift_x),
+                              (-dx, dy): (-shift_x, shift_y),
+                              (-dy, dx): (-shift_y, shift_x),
+                              (dx, -dy): (shift_x, -shift_y),
+                              (dy, -dx): (shift_y, -shift_x)}
+                             for (dx, dy), (shift_x, shift_y)
+                             in {(0, 2): (0, 1),
+                                 (1, 2): (1, 1),
+                                 (2, 2): (1, 1)}.items()] for k, v in d.items()}
 
 
-def move_tail(tail: tuple[int, int], head: tuple[int, int]):
-    tx, ty = tail
-    hx, hy = head
-    if tx - hx > 1:
-        tx -= 1
-        if ty < hy:
-            ty += 1
-        if ty > hy:
-            ty -= 1
-    if hx - tx > 1:
-        tx += 1
-        if ty < hy:
-            ty += 1
-        if ty > hy:
-            ty -= 1
-    if ty - hy > 1:
-        ty -= 1
-        if tx < hx:
-            tx += 1
-        if tx > hx:
-            tx -= 1
-    if hy - ty > 1:
-        ty += 1
-        if tx < hx:
-            tx += 1
-        if tx > hx:
-            tx -= 1
-    return tx, ty
+def move_head(x: int, y: int, direction: Literal["U", "D", "L", "R"]):
+    dx, dy = SHIFT_HEAD[direction]
+    return x + dx, y + dy
+
+
+def move_tail(tx: int, ty: int, hx: int, hy: int):
+    dx, dy = SHIFT_TAIL.get((hx - tx, hy - ty), (0, 0))
+    return tx + dx, ty + dy
+
+
+def head_movements(movements):
+    x, y = 0, 0
+    for direction, distance in movements:
+        for i in range(distance):
+            x, y = move_head(x, y, direction)
+            yield x, y
+
+
+def tail_movements(head_positions):
+    x, y = 0, 0
+    for hx, hy in head_positions:
+        x, y = move_tail(x, y, hx, hy)
+        yield x, y
 
 
 def move_rope(movements: list[tuple[str, int]], knots: int):
-    tail_visited = set()
-    rope = [(0, 0) for i in range(knots)]
+    head_positions = head_movements(movements)
 
-    tail_visited.add(rope[-1])
+    for i in range(knots - 1):
+        head_positions = tail_movements(head_positions)
 
-    for direction, distance in movements:
-        for i in range(distance):
-            rope[0] = move_head(rope[0], direction)
-            for knot in range(1, knots):
-                rope[knot] = move_tail(rope[knot], rope[knot - 1])
-            tail_visited.add(rope[-1])
-
+    tail_visited = set(head_positions)
     return len(tail_visited)
 
 
