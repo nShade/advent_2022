@@ -48,10 +48,9 @@ def move_rope(movements: list[tuple[str, int]], knots: int):
     head_positions = head_movements(movements)
 
     for i in range(knots - 1):
-        head_positions = tail_movements(head_positions)
+        tail_positions = tail_movements(head_positions)
 
-    tail_visited = set(head_positions)
-    return len(tail_visited)
+    return len(set(tail_positions))
 
 
 if __name__ == "__main__":

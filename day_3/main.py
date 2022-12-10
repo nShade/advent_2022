@@ -18,6 +18,6 @@ if __name__ == "__main__":
     res_1 = sum([similar_item(*items) for items in priorities])
     print(f"Part 1: {res_1}")
     priorities = [{PRIORITY[sym] for sym in line[:-1]} for line in input_lines]
-    chunked_list = list(itertools.zip_longest(*[priorities[i::3] for i in range(3)]))
+    chunked_list = zip(*[priorities[i::3] for i in range(3)])
     res_2 = sum([similar_item(*item) for item in chunked_list])
     print(f"Part 2: {res_2}")
