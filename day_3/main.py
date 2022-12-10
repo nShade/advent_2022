@@ -15,7 +15,6 @@ if __name__ == "__main__":
     priorities = [({PRIORITY[sym] for sym in line[:(len(line) - 1) // 2]},
                    {PRIORITY[sym] for sym in line[(len(line) - 1) // 2:-1]})
                   for line in input_lines]
-    print(priorities)
     res_1 = sum([similar_item(*items) for items in priorities])
     print(f"Part 1: {res_1}")
     priorities = [{PRIORITY[sym] for sym in line[:-1]} for line in input_lines]

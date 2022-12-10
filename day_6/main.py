@@ -1,20 +1,21 @@
-def find_marker(input, length=4):
+def find_marker(input, marker_length=4):
     """
     >>> find_marker("abcd", 4)
     4
     >>> find_marker("abcbde", 4)
     6
     """
-    last = input[:length - 1]
-
-    for i, letter in enumerate(input[length - 1:]):
-
-        if len(set(last + letter)) == length:
-            return i + length
-
-        last = last[-(length - 2):] + letter
-
-    return -1
+    last_index = {}
+    non_unique = 0
+    for index, sym in enumerate(input):
+        sym_last_index = last_index.get(sym, -1)
+        last_index[sym] = index
+        if index - sym_last_index > marker_length:
+            non_unique -= 1
+            if non_unique == 0:
+                return index + 1
+        else:
+            non_unique = max(non_unique - 1, marker_length - (index - sym_last_index))
 
 
 if __name__ == "__main__":
