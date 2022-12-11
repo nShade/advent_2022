@@ -1,3 +1,4 @@
+import math
 import re
 
 MONKEY_PATTERN = re.compile(r"""Monkey (?P<monkey>\d):
@@ -9,11 +10,7 @@ MONKEY_PATTERN = re.compile(r"""Monkey (?P<monkey>\d):
 
 
 def monkey_test(item, operation, test):
-    """
-    >>> monkey_test(44, "old - 2", 3)
-    (14, False)
-    """
-    new = round(eval(operation, {}, {'old': item}) / 3)
+    new = math.floor(eval(operation, {}, {'old': item}) / 3)
     return new, new % test == 0
 
 
@@ -23,7 +20,7 @@ def monkey_turn(items, operation, test):
 
 
 def monkey_round(monkeys):
-    for monkey_id in range(8):
+    for monkey_id in range(len(monkeys)):
         monkey = monkeys[monkey_id]
         yield len(monkey['items'])
 
