@@ -13,7 +13,7 @@ def rotate_270(array):
     return rotate_90(rotate_180(array))
 
 
-def visible(row):
+def calculate_visible(row):
     highest = -1
     for tree in row:
         if tree > highest:
@@ -23,11 +23,22 @@ def visible(row):
             yield 0
 
 
-def score(row):
+def calculate_score(row):
     height_index = [0 for k in range(10)]
     for index, tree in enumerate(row):
         yield index - max(height_index[tree:])
         height_index[tree] = index
+
+
+def calculate_all_sides(array, func, combine):
+    array_90 = rotate_90(array)
+    array_180 = rotate_90(array_90)
+    array_270 = rotate_90(array_180)
+    left = itertools.chain(*map(func, array))
+    bottom = itertools.chain(*rotate_270(map(func, array_90)))
+    right = itertools.chain(*rotate_180(map(func, array_180)))
+    top = itertools.chain(*rotate_90(map(func, array_270)))
+    return map(combine, left, bottom, right, top)
 
 
 if __name__ == "__main__":
@@ -35,22 +46,11 @@ if __name__ == "__main__":
         input_lines = input_file.readlines()
 
     tree_height_array = [[int(sym) for sym in line[:-1]] for line in input_lines]
-    tree_height_array_90 = rotate_90(tree_height_array)
-    tree_height_array_180 = rotate_90(tree_height_array_90)
-    tree_height_array_270 = rotate_90(tree_height_array_180)
 
-    visible_left = itertools.chain(*map(visible, tree_height_array))
-    visible_bottom = itertools.chain(*rotate_270(map(visible, tree_height_array_90)))
-    visible_right = itertools.chain(*rotate_180(map(visible, tree_height_array_180)))
-    visible_top = itertools.chain(*rotate_90(map(visible, tree_height_array_270)))
-
-    res_1 = sum(map(lambda a, b, c, d: 1 if a + b + c + d > 0 else 0,
-                    visible_left, visible_bottom, visible_right, visible_top))
+    visible = calculate_all_sides(tree_height_array, calculate_visible, lambda a, b, c, d: 1 if a + b + c + d > 0 else 0)
+    res_1 = sum(visible)
     print(f"Part 1: {res_1}")
 
-    score_left = itertools.chain(*map(score, tree_height_array))
-    score_bottom = itertools.chain(*rotate_270(map(score, tree_height_array_90)))
-    score_right = itertools.chain(*rotate_180(map(score, tree_height_array_180)))
-    score_top = itertools.chain(*rotate_90(map(score, tree_height_array_270)))
-    res_2 = max(map(lambda a, b, c, d: a * b * c * d, score_left, score_right, score_top, score_bottom))
+    score = calculate_all_sides(tree_height_array, calculate_score, lambda a, b, c, d: a * b * c * d)
+    res_2 = max(score)
     print(f"Part 2: {res_2}")

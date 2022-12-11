@@ -23,4 +23,4 @@ if __name__ == "__main__":
         text = input_file.read()
 
     print(f"Part 1: {find_marker(text)}")
-    print(f"Part 1: {find_marker(text, 14)}")
+    print(f"Part 2: {find_marker(text, 14)}")
