@@ -1,4 +1,6 @@
-import math
+import copy
+import functools
+import itertools
 import re
 
 MONKEY_PATTERN = re.compile(r"""Monkey (?P<monkey>\d):
@@ -9,42 +11,47 @@ MONKEY_PATTERN = re.compile(r"""Monkey (?P<monkey>\d):
     If false: throw to monkey (?P<test_negative_throw>\d)""")
 
 
-def monkey_test(item, operation, test):
-    new = math.floor(eval(operation, {}, {'old': item}) / 3)
-    return new, new % test == 0
+def monkey_test(operation, test, throw, manage, item):
+    new = manage(eval(operation, {}, {'old': item}))
+    return new, throw[new % test == 0]
 
 
-def monkey_turn(items, operation, test):
-    for item in items:
-        yield monkey_test(item, operation, test)
+def monkey_round(monkeys, manage):
+    for i, (items, test) in enumerate(monkeys):
+        yield len(items)
+
+        for item in items:
+            item, throw_to = test(manage, item)
+            monkeys[throw_to][0] += [item]
+
+        monkeys[i][0] = []
 
 
-def monkey_round(monkeys):
-    for monkey_id in range(len(monkeys)):
-        monkey = monkeys[monkey_id]
-        yield len(monkey['items'])
-
-        for item, test_result in monkey_turn(monkey['items'], monkey['operation'], monkey['test']):
-            monkeys[monkey['throw'][test_result]]['items'].append(item)
-
-        monkey['items'] = []
+def calculate_monkey_business(monkeys, manage, rounds):
+    res = [monkey_round(monkeys, manage) for i in range(rounds)]
+    inspected = list(map(sum, zip(*list(map(list, res)))))
+    two_most_active = sorted(inspected)[-2:]
+    return two_most_active[0] * two_most_active[1]
 
 
 if __name__ == "__main__":
     with open("input", "r") as input_file:
         input_text = input_file.read()
 
-    monkeys = {int(monkey_dict['monkey']): {'items': [int(item) for item in monkey_dict['items'].split(", ")],
-                                            'test': int(monkey_dict['test']),
-                                            'operation': monkey_dict['operation'],
-                                            'throw': {True: int(monkey_dict['test_positive_throw']),
-                                                      False: int(monkey_dict['test_negative_throw'])}}
-               for monkey_dict in MONKEY_PATTERN.finditer(input_text)}
+    parsed_text = [monkey_dict for monkey_dict in MONKEY_PATTERN.finditer(input_text)]
+    monkeys = [[[int(item) for item in monkey_dict['items'].split(", ")],
+                functools.partial(monkey_test,
+                                  monkey_dict['operation'],
+                                  int(monkey_dict['test']),
+                                  {True: int(monkey_dict['test_positive_throw']),
+                                   False: int(monkey_dict['test_negative_throw'])})]
+               for monkey_dict in parsed_text]
+    monkeys_2 = copy.deepcopy(monkeys)
 
-    inspected = list(map(sum, zip(*[list(monkey_round(monkeys)) for i in range(20)])))
-    two_most_active = sorted(inspected)[-2:]
-    monkey_business = two_most_active[0] * two_most_active[1]
-
+    monkey_business = calculate_monkey_business(monkeys, lambda x: x // 3, 20)
     print(f"Part 1: {monkey_business}")
-    res_2 = "IDK"
-    print(f"Part 2: {res_2}")
+
+    tests = [int(monkey_dict['test']) for monkey_dict in parsed_text]
+    *_, divisor = itertools.accumulate(tests, lambda a, b: a * b)
+    monkey_business = calculate_monkey_business(monkeys_2, lambda x: x % divisor, 10000)
+    print(f"Part 2: {monkey_business}")
