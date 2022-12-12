@@ -30,13 +30,25 @@ def find_path(solutions, paths, start, end, moves=0):
     path_r, path_l, path_d, path_u = None, None, None, None
 
     if is_path_right:
-        path_r = find_path(solutions, paths, (start_y, start_x + 1), end, moves + 1)
+        try:
+            path_r = find_path(solutions, paths, (start_y, start_x + 1), end, moves + 1)
+        except:
+            pass
     if is_path_left:
-        path_l = find_path(solutions, paths, (start_y, start_x - 1), end, moves + 1)
+        try:
+            path_l = find_path(solutions, paths, (start_y, start_x - 1), end, moves + 1)
+        except:
+            pass
     if is_path_down:
-        path_d = find_path(solutions, paths, (start_y + 1, start_x), end, moves + 1)
+        try:
+            path_d = find_path(solutions, paths, (start_y + 1, start_x), end, moves + 1)
+        except:
+            pass
     if is_path_up:
-        path_u = find_path(solutions, paths, (start_y - 1, start_x), end, moves + 1)
+        try:
+            path_u = find_path(solutions, paths, (start_y - 1, start_x), end, moves + 1)
+        except:
+            pass
 
     if path_u == path_d == path_r == path_l is None:
         return None
@@ -53,6 +65,7 @@ if __name__ == "__main__":
     height = len(input_lines)
 
     paths = ()
+    possible_hike_starts = ()
     start, end = None, None
     for i, (line, line_below, line_above) \
             in enumerate(zip(input_lines,
@@ -69,6 +82,8 @@ if __name__ == "__main__":
                 start = (i, j)
             if symbol == 'E':
                 end = (i, j)
+            if symbol == 'a':
+                possible_hike_starts += ((i, j),)
             p += ((is_path_exists(symbol, symbol_right),
                    is_path_exists(symbol, symbol_left),
                    is_path_exists(symbol, symbol_below),
@@ -80,5 +95,15 @@ if __name__ == "__main__":
 
     res_1 = find_path(solutions, paths, start, end)
     print(f"Part 1: {res_1}")
-    res_2 = "IDK"
+
+    res_2 = res_1
+    for start in possible_hike_starts:
+        solutions = [[None for i in range(width)] for j in range(height)]
+        try:
+            res = find_path(solutions, paths, start, end)
+            if res:
+                res_2 = min(res, res_2)
+        except:
+            pass
+
     print(f"Part 2: {res_2}")
