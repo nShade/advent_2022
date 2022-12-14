@@ -31,22 +31,19 @@ def comes_to_rest(rocks):
 
     while True:
         final_unit_position = drop_sand_floor(rocks | sand, (500, 0), bottom + 2)
-        units += 1
-        sand |= {final_unit_position}
-
         if final_unit_position[1] == bottom + 1:
             break
-
-    yield units - 1
-
-    while True:
-        final_unit_position = drop_sand_floor(rocks | sand, (500, 0), bottom + 2)
         units += 1
         sand |= {final_unit_position}
-        if final_unit_position == (500, 0):
-            break
 
     yield units
+    sand = set([(500, 0)])
+    sand_row = set([(500, 0)])
+    for y in range(0, bottom + 1):
+        sand_row = ({(x + 1, y + 1) for x, y in sand_row} | {(x - 1, y + 1) for x, y in sand_row} | {(x, y + 1) for x, y in sand_row}) - rocks
+        sand |= sand_row
+
+    yield len(sand)
 
 
 if __name__ == "__main__":
